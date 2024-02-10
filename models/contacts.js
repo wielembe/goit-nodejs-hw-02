@@ -1,3 +1,4 @@
+const validate = require("uuid-validate");
 const { readFile, writeFile } = require("fs").promises;
 const path = require("path");
 const {
@@ -17,6 +18,10 @@ const listContacts = async () => {
 
 const getContactById = async (contactId) => {
     try {
+        if (!validate(contactId)) {
+            return;
+        }
+
         const data = await readFile(contactsPath, "utf8");
         const contacts = JSON.parse(data);
         const index = contacts.findIndex((contact) => contact.id === contactId);
@@ -53,6 +58,7 @@ const addContact = async (body) => {
 
         const data = await readFile(contactsPath, "utf8");
         const contacts = JSON.parse(data);
+
         contacts.push(body);
 
         const newContacts = JSON.stringify(contacts);
