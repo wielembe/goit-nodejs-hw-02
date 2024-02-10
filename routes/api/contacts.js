@@ -47,9 +47,9 @@ router.post("/", async (req, res, next) => {
     try {
         const body = {
             id: v4(),
-            name: req.query.name,
-            email: req.query.email,
-            phone: req.query.phone,
+            name: req.body.name,
+            email: req.body.email,
+            phone: req.body.phone,
         };
         const result = await addContact(body);
         if (result.status === 400) {
@@ -94,9 +94,9 @@ router.delete("/:contactId", async (req, res, next) => {
 router.put("/:contactId", async (req, res, next) => {
     try {
         const body = {
-            name: req.query.name,
-            email: req.query.email,
-            phone: req.query.phone,
+            name: req.body.name,
+            email: req.body.email,
+            phone: req.body.phone,
         };
         const result = await updateContact(req.params.contactId, body);
         if (result && result.status !== 400 && result !== 400) {

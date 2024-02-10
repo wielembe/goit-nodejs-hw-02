@@ -37,9 +37,7 @@ const removeContact = async (contactId) => {
         } else {
             contacts.splice(index, 1);
             const newContacts = JSON.stringify(contacts);
-            await writeFile(contactsPath, newContacts, (err) => {
-                if (err) console.log(err.message);
-            });
+            await writeFile(contactsPath, newContacts);
             const successMessage = "contact deleted";
             return successMessage;
         }
@@ -52,9 +50,11 @@ const addContact = async (body) => {
     try {
         await newContactAuthSchema.validateAsync(body);
         body.email = body.email.toLowerCase();
+
         const data = await readFile(contactsPath, "utf8");
         const contacts = JSON.parse(data);
         contacts.push(body);
+
         const newContacts = JSON.stringify(contacts);
         writeFile(contactsPath, newContacts, (err) => {
             if (err) console.log(err.message);
