@@ -61,7 +61,7 @@ const addContact = async (body) => {
         const mailIndex = contacts.findIndex(
             (contact) => contact.email === body.email
         );
-        if (!mailIndex) {
+        if (mailIndex === -1) {
             contacts.push(body);
 
             const newContacts = JSON.stringify(contacts);
