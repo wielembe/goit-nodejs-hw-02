@@ -20,13 +20,15 @@ const getContactById = async (contactId) => {
     try {
         if (!validate(contactId)) {
             return;
+        } else {
+            const data = await readFile(contactsPath, "utf8");
+            const contacts = JSON.parse(data);
+            const index = contacts.findIndex(
+                (contact) => contact.id === contactId
+            );
+
+            return contacts[index];
         }
-
-        const data = await readFile(contactsPath, "utf8");
-        const contacts = JSON.parse(data);
-        const index = contacts.findIndex((contact) => contact.id === contactId);
-
-        return contacts[index];
     } catch (err) {
         console.log(err.message);
     }
@@ -54,18 +56,21 @@ const removeContact = async (contactId) => {
 const addContact = async (body) => {
     try {
         await newContactAuthSchema.validateAsync(body);
-        body.email = body.email.toLowerCase();
-
         const data = await readFile(contactsPath, "utf8");
         const contacts = JSON.parse(data);
+        const mailIndex = contacts.findIndex(
+            (contact) => contact.email === body.email
+        );
+        if (!mailIndex) {
+            contacts.push(body);
 
-        contacts.push(body);
+            const newContacts = JSON.stringify(contacts);
 
-        const newContacts = JSON.stringify(contacts);
-        writeFile(contactsPath, newContacts, (err) => {
-            if (err) console.log(err.message);
-        });
-        return body;
+            writeFile(contactsPath, newContacts);
+            return body;
+        } else {
+            return;
+        }
     } catch (err) {
         if (err.isJoi) {
             err.status = 400;
