@@ -1,19 +1,126 @@
-// const fs = require('fs/promises')
+const validate = require("uuid-validate");
+const { readFile, writeFile } = require("fs").promises;
+const path = require("path");
+const {
+    newContactAuthSchema,
+    editContactAuthSchema,
+} = require("../validation/validation");
 
-const listContacts = async () => {}
+const contactsFile = path.basename("./models/contacts.json");
+const contactsDir = path.dirname("./models/contacts.json");
+const contactsPath = path.join(contactsDir, contactsFile);
 
-const getContactById = async (contactId) => {}
+const listContacts = async () => {
+    return readFile(contactsPath, "utf8")
+        .then((data) => JSON.parse(data))
+        .catch((err) => console.log(err.message));
+};
 
-const removeContact = async (contactId) => {}
+const getContactById = async (contactId) => {
+    try {
+        if (!validate(contactId)) {
+            return;
+        } else {
+            const data = await readFile(contactsPath, "utf8");
+            const contacts = JSON.parse(data);
+            const index = contacts.findIndex(
+                (contact) => contact.id === contactId
+            );
 
-const addContact = async (body) => {}
+            return contacts[index];
+        }
+    } catch (err) {
+        console.log(err.message);
+    }
+};
 
-const updateContact = async (contactId, body) => {}
+const removeContact = async (contactId) => {
+    try {
+        const data = await readFile(contactsPath, "utf8");
+        const contacts = JSON.parse(data);
+        const index = contacts.findIndex((contact) => contact.id === contactId);
+        if (index === -1) {
+            return;
+        } else {
+            contacts.splice(index, 1);
+            const newContacts = JSON.stringify(contacts);
+            await writeFile(contactsPath, newContacts);
+            const successMessage = "contact deleted";
+            return successMessage;
+        }
+    } catch (err) {
+        console.log(err.message);
+    }
+};
+
+const addContact = async (body) => {
+    try {
+        await newContactAuthSchema.validateAsync(body);
+        const data = await readFile(contactsPath, "utf8");
+        const contacts = JSON.parse(data);
+        const mailIndex = contacts.findIndex(
+            (contact) => contact.email === body.email
+        );
+        if (mailIndex === -1) {
+            contacts.push(body);
+
+            const newContacts = JSON.stringify(contacts);
+
+            writeFile(contactsPath, newContacts);
+            return body;
+        } else {
+            return;
+        }
+    } catch (err) {
+        if (err.isJoi) {
+            err.status = 400;
+            return err;
+        }
+        console.log(err.message);
+    }
+};
+
+const updateContact = async (contactId, body) => {
+    try {
+        const { name, email, phone } = body;
+        if (!name && !email && !phone) {
+            const result = 400;
+            return result;
+        } else {
+            const data = await readFile(contactsPath, "utf8");
+            const contacts = JSON.parse(data);
+            const index = contacts.findIndex(
+                (contact) => contact.id === contactId
+            );
+            if (index === -1) {
+                return;
+            } else {
+                await editContactAuthSchema.validateAsync(body);
+                const contactToEdit = contacts[index];
+                if (name) contactToEdit.name = name;
+                if (email) contactToEdit.email = email.toLowerCase();
+                if (phone) contactToEdit.phone = phone;
+                contacts.splice(index, 1, contactToEdit);
+                const newContacts = JSON.stringify(contacts);
+                writeFile(contactsPath, newContacts, (err) => {
+                    if (err) console.log(err.message);
+                });
+                return contactToEdit;
+            }
+        }
+    } catch (err) {
+        if (err.isJoi) {
+            err.status = 400;
+            return err;
+        }
+        console.log(err.message);
+    }
+};
 
 module.exports = {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
-}
+    listContacts,
+    getContactById,
+    removeContact,
+    addContact,
+    updateContact,
+};
