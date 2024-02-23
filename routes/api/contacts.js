@@ -160,12 +160,11 @@ router.patch("/:contactId/favorite", async (req, res, next) => {
         };
         const result = await updateStatusContact(req.params.contactId, body);
         if (result && result.status !== 400 && result !== 400) {
-            res.json({
+            return res.json({
                 status: "success",
                 code: 200,
                 data: result,
             });
-            return;
         }
         if (!result) {
             res.status(404).json({
