@@ -180,7 +180,7 @@ router.patch("/:contactId/favorite", async (req, res, next) => {
             message: result.message || "missing field favorite",
         });
     } catch (err) {
-        console.log(err.message);
+        console.log(err);
         res.status(500).json({
             status: "failure",
             code: 500,
