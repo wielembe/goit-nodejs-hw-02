@@ -1,34 +1,21 @@
-const validate = require("uuid-validate");
-const { readFile, writeFile } = require("fs").promises;
-const path = require("path");
 const {
     newContactAuthSchema,
     editContactAuthSchema,
+    editFavContactAuthSchema,
 } = require("../validation/validation");
-
-const contactsFile = path.basename("./models/contacts.json");
-const contactsDir = path.dirname("./models/contacts.json");
-const contactsPath = path.join(contactsDir, contactsFile);
+const Contact = require("../schemas/contact");
 
 const listContacts = async () => {
-    return readFile(contactsPath, "utf8")
-        .then((data) => JSON.parse(data))
-        .catch((err) => console.log(err.message));
+    try {
+        return await Contact.find();
+    } catch (err) {
+        console.log(err.message);
+    }
 };
 
 const getContactById = async (contactId) => {
     try {
-        if (!validate(contactId)) {
-            return;
-        } else {
-            const data = await readFile(contactsPath, "utf8");
-            const contacts = JSON.parse(data);
-            const index = contacts.findIndex(
-                (contact) => contact.id === contactId
-            );
-
-            return contacts[index];
-        }
+        return await Contact.findOne({ _id: contactId });
     } catch (err) {
         console.log(err.message);
     }
@@ -36,18 +23,9 @@ const getContactById = async (contactId) => {
 
 const removeContact = async (contactId) => {
     try {
-        const data = await readFile(contactsPath, "utf8");
-        const contacts = JSON.parse(data);
-        const index = contacts.findIndex((contact) => contact.id === contactId);
-        if (index === -1) {
-            return;
-        } else {
-            contacts.splice(index, 1);
-            const newContacts = JSON.stringify(contacts);
-            await writeFile(contactsPath, newContacts);
-            const successMessage = "contact deleted";
-            return successMessage;
-        }
+        return await Contact.deleteOne({
+            _id: contactId,
+        });
     } catch (err) {
         console.log(err.message);
     }
@@ -56,21 +34,8 @@ const removeContact = async (contactId) => {
 const addContact = async (body) => {
     try {
         await newContactAuthSchema.validateAsync(body);
-        const data = await readFile(contactsPath, "utf8");
-        const contacts = JSON.parse(data);
-        const mailIndex = contacts.findIndex(
-            (contact) => contact.email === body.email
-        );
-        if (mailIndex === -1) {
-            contacts.push(body);
-
-            const newContacts = JSON.stringify(contacts);
-
-            writeFile(contactsPath, newContacts);
-            return body;
-        } else {
-            return;
-        }
+        body.email = body.email.toLowerCase();
+        return await Contact.create(body);
     } catch (err) {
         if (err.isJoi) {
             err.status = 400;
@@ -82,31 +47,41 @@ const addContact = async (body) => {
 
 const updateContact = async (contactId, body) => {
     try {
-        const { name, email, phone } = body;
-        if (!name && !email && !phone) {
+        const { name, email, phone, favorite } = body;
+        if (!name && !email && !phone && !favorite) {
             const result = 400;
             return result;
         } else {
-            const data = await readFile(contactsPath, "utf8");
-            const contacts = JSON.parse(data);
-            const index = contacts.findIndex(
-                (contact) => contact.id === contactId
+            await editContactAuthSchema.validateAsync(body);
+
+            if (body.email) body.email = body.email.toLowerCase();
+            return Contact.findOneAndUpdate(
+                { _id: contactId },
+                { $set: body },
+                { new: true }
             );
-            if (index === -1) {
-                return;
-            } else {
-                await editContactAuthSchema.validateAsync(body);
-                const contactToEdit = contacts[index];
-                if (name) contactToEdit.name = name;
-                if (email) contactToEdit.email = email.toLowerCase();
-                if (phone) contactToEdit.phone = phone;
-                contacts.splice(index, 1, contactToEdit);
-                const newContacts = JSON.stringify(contacts);
-                writeFile(contactsPath, newContacts, (err) => {
-                    if (err) console.log(err.message);
-                });
-                return contactToEdit;
-            }
+        }
+    } catch (err) {
+        if (err.isJoi) {
+            err.status = 400;
+            return err;
+        }
+        console.log(err.message);
+    }
+};
+
+const updateStatusContact = async (contactId, body) => {
+    try {
+        if (!body.favorite) {
+            const result = 400;
+            return result;
+        } else {
+            await editFavContactAuthSchema.validateAsync(body);
+            return Contact.findOneAndUpdate(
+                { _id: contactId },
+                { $set: body },
+                { new: true }
+            );
         }
     } catch (err) {
         if (err.isJoi) {
@@ -123,4 +98,5 @@ module.exports = {
     removeContact,
     addContact,
     updateContact,
+    updateStatusContact,
 };

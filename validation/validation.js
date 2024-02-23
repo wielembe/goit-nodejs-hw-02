@@ -13,7 +13,12 @@ const editContactAuthSchema = Joi.object({
     phone: Joi.number().integer(),
 });
 
+const editFavContactAuthSchema = Joi.object({
+    favorite: Joi.boolean().required(),
+});
+
 module.exports = {
     newContactAuthSchema,
     editContactAuthSchema,
+    editFavContactAuthSchema,
 };
