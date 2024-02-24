@@ -27,7 +27,7 @@ const userSchema = new Schema(
     { versionKey: false }
 );
 userSchema.methods.setPassword = function (password) {
-    console.log(this.password + " jestes w Schema");
+    console.log(this.password + " in Schema");
     this.password = bCrypt.hashSync(password, bCrypt.genSaltSync(6));
 };
 
