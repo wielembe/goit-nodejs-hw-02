@@ -17,8 +17,13 @@ const editFavContactAuthSchema = Joi.object({
     favorite: Joi.boolean().required(),
 });
 
+const contactIsFavoriteAuthSchema = Joi.object({
+    favorite: Joi.bool().required(),
+});
+
 module.exports = {
     newContactAuthSchema,
     editContactAuthSchema,
     editFavContactAuthSchema,
+    contactIsFavoriteAuthSchema,
 };

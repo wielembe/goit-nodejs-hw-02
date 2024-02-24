@@ -2,8 +2,10 @@ const {
     newContactAuthSchema,
     editContactAuthSchema,
     editFavContactAuthSchema,
-} = require("../validation/validation");
-const Contact = require("../schemas/contact");
+
+    contactIsFavoriteAuthSchema,
+} = require("../service/validation/contactValidation");
+const Contact = require("../service/schemas/contact");
 
 const listContacts = async () => {
     try {
@@ -91,7 +93,19 @@ const updateStatusContact = async (contactId, body) => {
         console.log(err.message);
     }
 };
-
+const getContactByFavorite = async (favorite) => {
+    try {
+        await contactIsFavoriteAuthSchema.validateAsync({ favorite });
+        const contacts = await Contact.find({ favorite });
+        return contacts;
+    } catch (err) {
+        if (err.isJoi) {
+            err.status = 400;
+            return err;
+        }
+        console.log(err.message);
+    }
+};
 module.exports = {
     listContacts,
     getContactById,
@@ -99,4 +113,5 @@ module.exports = {
     addContact,
     updateContact,
     updateStatusContact,
+    getContactByFavorite,
 };
