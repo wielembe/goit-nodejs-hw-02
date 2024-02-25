@@ -92,21 +92,23 @@ const logoutUser = async (req, res, next) => {
     }
 };
 
-const getCurrentUser = async (req, res, next) => {
-    try {
-        const { email, subscription, token } = req.user;
-        const result = await currentUser(token);
-        if (result && result !== 400 && result.status !== 400) {
-            return res.status(200).json({
-                status: "success",
-                code: 200,
-                data: { email, subscription },
-            });
-        }
-    } catch (err) {
-        errorResponse(res, err.message);
-    }
-};
+const getCurrentUser = currentUser;
+
+// async (req, res, next) => {
+//     try {
+//         const { email, subscription, token } = req.user;
+//         const result = await currentUser(token);
+//         if (result && result !== 400 && result.status !== 400) {
+//             return res.status(200).json({
+//                 status: "success",
+//                 code: 200,
+//                 data: { email, subscription },
+//             });
+//         }
+//     } catch (err) {
+//         errorResponse(res, err.message);
+//     }
+// };
 
 const updateUserSubscription = async (req, res, next) => {
     if (!req.user.token) {

@@ -66,10 +66,10 @@ const getContactsById = async (req, res, next) => {
 const postContact = async (req, res, next) => {
     try {
         const body = {
-            name: req.query.name,
-            email: req.query.email,
-            phone: req.query.phone,
-            favorite: req.query.favorite || false,
+            name: req.body.name,
+            email: req.body.email,
+            phone: req.body.phone,
+            favorite: req.body.favorite || false,
         };
         const result = await addContact(body);
         if (result && result.status !== 400) {

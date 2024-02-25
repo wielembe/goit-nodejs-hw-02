@@ -1,5 +1,5 @@
 const express = require("express");
-
+const auth = require("../../service/middleware/middleware");
 const router = express.Router();
 
 const {
@@ -12,15 +12,15 @@ const {
     editContactFavorite,
 } = require("./controllers/manageContacts");
 
-router.get("/", getContactsByFavorite);
+router.get("/", auth, getContactsByFavorite);
 
-router.get("/", getAllContacts);
-router.get("/:contactId", getContactsById);
+router.get("/", auth, getAllContacts);
+router.get("/:contactId", auth, getContactsById);
 
-router.post("/", postContact);
+router.post("/", auth, postContact);
 
-router.delete("/:contactId", deleteContact);
-router.put("/:contactId", editContact);
-router.patch("/:contactId/favorite", editContactFavorite);
+router.delete("/:contactId", auth, deleteContact);
+router.put("/:contactId", auth, editContact);
+router.patch("/:contactId/favorite", auth, editContactFavorite);
 
 module.exports = router;

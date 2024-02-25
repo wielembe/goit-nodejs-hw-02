@@ -1,9 +1,9 @@
 const {
-    newContactAuthSchema,
-    editContactAuthSchema,
-    editFavContactAuthSchema,
+    contactSchema,
+    editContactSchema,
+    editFavContactSchema,
 
-    contactIsFavoriteAuthSchema,
+    contactIsFavoriteSchema,
 } = require("../service/validation/contactValidation");
 const Contact = require("../service/schemas/contact");
 
@@ -35,7 +35,7 @@ const removeContact = async (contactId) => {
 
 const addContact = async (body) => {
     try {
-        await newContactAuthSchema.validateAsync(body);
+        await contactSchema.validateAsync(body);
         body.email = body.email.toLowerCase();
         return await Contact.create(body);
     } catch (err) {
@@ -54,7 +54,7 @@ const updateContact = async (contactId, body) => {
             const result = 400;
             return result;
         } else {
-            await editContactAuthSchema.validateAsync(body);
+            await editContactSchema.validateAsync(body);
 
             if (body.email) body.email = body.email.toLowerCase();
             return Contact.findOneAndUpdate(
@@ -78,7 +78,7 @@ const updateStatusContact = async (contactId, body) => {
             const result = 400;
             return result;
         } else {
-            await editFavContactAuthSchema.validateAsync(body);
+            await editFavContactSchema.validateAsync(body);
             return Contact.findOneAndUpdate(
                 { _id: contactId },
                 { $set: body },
@@ -95,7 +95,7 @@ const updateStatusContact = async (contactId, body) => {
 };
 const getContactByFavorite = async (favorite) => {
     try {
-        await contactIsFavoriteAuthSchema.validateAsync({ favorite });
+        await contactIsFavoriteSchema.validateAsync({ favorite });
         const contacts = await Contact.find({ favorite });
         return contacts;
     } catch (err) {
