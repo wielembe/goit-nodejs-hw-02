@@ -7,9 +7,10 @@ const {
 } = require("../service/validation/contactValidation");
 const Contact = require("../service/schemas/contact");
 
-const listContacts = async () => {
+const listContacts = async (user) => {
     try {
-        return await Contact.find();
+        const { _id: owner } = user;
+        return await Contact.find({ owner });
     } catch (err) {
         console.log(err.message);
     }
@@ -35,9 +36,9 @@ const removeContact = async (contactId) => {
 
 const addContact = async (body) => {
     try {
-        await contactSchema.validateAsync(body);
+        await contactSchema.validateAsync(body, body.owner);
         body.email = body.email.toLowerCase();
-        return await Contact.create(body);
+        return await Contact.create(body, body.owner);
     } catch (err) {
         if (err.isJoi) {
             err.status = 400;

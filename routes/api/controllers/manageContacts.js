@@ -72,6 +72,7 @@ const postContact = async (req, res, next) => {
             favorite: req.body.favorite || false,
         };
         const result = await addContact(body);
+
         if (result && result.status !== 400) {
             res.status(201).json({
                 status: "success",
