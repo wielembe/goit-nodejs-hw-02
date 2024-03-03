@@ -7,15 +7,24 @@ const {
 } = require("../service/validation/contactValidation");
 const Contact = require("../service/schemas/contact");
 
-const listContacts = async (user) => {
+// const listContacts = async (user) => {
+//     try {
+//         const { _id: owner } = user;
+//         return await Contact.find({ owner });
+//     } catch (err) {
+//         console.log(err.message);
+//     }
+// };
+
+const listContacts = async (ownerId) => {
     try {
-        const { _id: owner } = user;
-        return await Contact.find({ owner });
-    } catch (err) {
-        console.log(err.message);
+        const filter = { owner: ownerId };
+        const contacts = await Contact.find(filter);
+        return contacts;
+    } catch (error) {
+        console.log(error.message);
     }
 };
-
 const getContactById = async (contactId) => {
     try {
         return await Contact.findOne({ _id: contactId });

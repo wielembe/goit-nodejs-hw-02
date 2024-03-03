@@ -55,6 +55,7 @@ const loginOnUser = async (req, res, next) => {
                 { _id: result._id },
                 { $set: { token: result.token } }
             );
+
             return res.status(200).json({
                 status: "success",
                 code: 200,

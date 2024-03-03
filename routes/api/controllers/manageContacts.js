@@ -32,7 +32,8 @@ const getContactsByFavorite = async (req, res, next) => {
 
 const getAllContacts = async (req, res, next) => {
     try {
-        const contacts = await listContacts();
+        const contacts = await listContacts(req.params.ownerId);
+
         res.json({
             status: "success",
             code: 200,

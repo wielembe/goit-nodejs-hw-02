@@ -1,3 +1,6 @@
+const jwt = require("jsonwebtoken");
+const SECRET = process.env.SECRET;
+
 const {
     newUserAuthSchema,
     loginUserAuthSchema,
@@ -5,7 +8,7 @@ const {
     editSubUserAuthSchema,
 } = require("../service/validation/userValidation");
 const User = require("../service/schemas/user");
-const { sign } = require("jsonwebtoken");
+
 require("dotenv").config();
 
 const registerUser = async (body) => {
@@ -38,9 +41,16 @@ const loginUser = async (body) => {
             const payload = {
                 id: user.id,
             };
-            const token = sign(payload, process.env.JWT_SECRET);
-            const loggedUser = { ...user._doc, token };
-            return loggedUser;
+            const token = jwt.sign(payload, SECRET, { expiresIn: "1h" });
+            // const loggedUser = { ...user._doc, token };
+            // return loggedUser;
+
+            const updatedUser = await User.findOneAndUpdate(
+                user,
+                { token },
+                { returnDocument: "after" }
+            );
+            return updatedUser;
         }
     } catch (err) {
         if (err.isJoi) {
@@ -51,13 +61,13 @@ const loginUser = async (body) => {
     }
 };
 
-const currentUser = async (token) => {
+const currentUser = async (body) => {
     try {
-        if (!token) {
+        if (!body.token) {
             return 400;
         }
-        await currUserAuthSchema.validateAsync({ token });
-        const user = await User.findOne({ token });
+        await currUserAuthSchema.validateAsync({ body });
+        const user = await User.findOne({ token: body.token });
         return user;
     } catch (err) {
         if (err.isJoi) {
