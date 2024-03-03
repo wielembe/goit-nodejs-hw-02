@@ -1,6 +1,3 @@
-const jwt = require("jsonwebtoken");
-const SECRET = process.env.SECRET;
-
 const {
     newUserAuthSchema,
     loginUserAuthSchema,
@@ -8,6 +5,7 @@ const {
     editSubUserAuthSchema,
 } = require("../service/validation/userValidation");
 const User = require("../service/schemas/user");
+const { sign } = require("jsonwebtoken");
 
 require("dotenv").config();
 
@@ -41,16 +39,11 @@ const loginUser = async (body) => {
             const payload = {
                 id: user.id,
             };
-            const token = jwt.sign(payload, SECRET, { expiresIn: "1h" });
-            // const loggedUser = { ...user._doc, token };
-            // return loggedUser;
-
-            const updatedUser = await User.findOneAndUpdate(
-                user,
-                { token },
-                { returnDocument: "after" }
-            );
-            return updatedUser;
+            const token = sign(payload, process.env.JWT_SECRET, {
+                expiresIn: "1h",
+            });
+            const loggedUser = { ...user._doc, token };
+            return loggedUser;
         }
     } catch (err) {
         if (err.isJoi) {
