@@ -76,7 +76,9 @@ const postContact = async (req, res, next) => {
 
             // favorite: req.body.favorite || false,
         };
-        const result = await addContact(body);
+        const ownerId = req.user._id;
+
+        const result = await addContact(body, ownerId);
 
         if (result && result.status !== 400) {
             res.status(201).json({
