@@ -31,22 +31,25 @@ const getContactsByFavorite = async (req, res, next) => {
 };
 
 const getAllContacts = async (req, res, next) => {
+    const ownerId = req.user._id;
     try {
-        const contacts = await listContacts(req.params.ownerId);
-
-        res.json({
-            status: "success",
-            code: 200,
-            data: contacts,
-        });
+        const contacts = await listContacts(ownerId);
+        if (contacts) {
+            res.json({
+                status: "success",
+                code: 200,
+                data: contacts,
+            });
+        }
     } catch (err) {
         errorResponse(res, err.message);
     }
 };
 
 const getContactsById = async (req, res, next) => {
+    const ownerId = req.user._id;
     try {
-        const contact = await getContactById(req.params.contactId);
+        const contact = await getContactById(req.params.contactId, ownerId);
         if (contact) {
             res.json({
                 status: "success",
@@ -70,7 +73,8 @@ const postContact = async (req, res, next) => {
             name: req.body.name,
             email: req.body.email,
             phone: req.body.phone,
-            favorite: req.body.favorite || false,
+
+            // favorite: req.body.favorite || false,
         };
         const result = await addContact(body);
 

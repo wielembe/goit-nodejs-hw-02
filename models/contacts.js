@@ -25,9 +25,10 @@ const listContacts = async (ownerId) => {
         console.log(error.message);
     }
 };
-const getContactById = async (contactId) => {
+const getContactById = async (contactId, user) => {
     try {
-        return await Contact.findOne({ _id: contactId });
+        const { _id: owner } = user;
+        return await Contact.findOne({ _id: contactId && owner });
     } catch (err) {
         console.log(err.message);
     }
@@ -36,6 +37,7 @@ const getContactById = async (contactId) => {
 const removeContact = async (contactId, user) => {
     try {
         const { _id: owner } = user;
+
         return await Contact.find({ owner }).deleteOne({ id: contactId });
         // return await Contact.deleteOne({
         //     _id: contactId,
@@ -45,11 +47,12 @@ const removeContact = async (contactId, user) => {
     }
 };
 
-const addContact = async (body) => {
+const addContact = async (body, ownerId) => {
     try {
         await contactSchema.validateAsync(body);
         body.email = body.email.toLowerCase();
-        return await Contact.create(body);
+
+        return Contact.create(...body, ownerId);
     } catch (err) {
         if (err.isJoi) {
             err.status = 400;
