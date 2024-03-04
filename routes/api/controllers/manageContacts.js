@@ -31,7 +31,7 @@ const getContactsByFavorite = async (req, res, next) => {
 };
 
 const getAllContacts = async (req, res, next) => {
-    const ownerId = req.user._id;
+    const ownerId = req.user.id;
     try {
         const contacts = await listContacts(ownerId);
         if (contacts) {
@@ -68,17 +68,18 @@ const getContactsById = async (req, res, next) => {
 };
 
 const postContact = async (req, res, next) => {
+    // const ownerId = req.user._id;
     try {
         const body = {
             name: req.body.name,
             email: req.body.email,
             phone: req.body.phone,
+            owner: req.body.user._id,
 
             // favorite: req.body.favorite || false,
         };
-        const ownerId = req.user._id;
 
-        const result = await addContact(body, ownerId);
+        const result = await addContact(body);
 
         if (result && result.status !== 400) {
             res.status(201).json({

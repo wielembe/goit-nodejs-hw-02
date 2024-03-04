@@ -47,12 +47,14 @@ const removeContact = async (contactId, user) => {
     }
 };
 
-const addContact = async (body, ownerId) => {
+const addContact = async (body) => {
     try {
         await contactSchema.validateAsync(body);
+
         body.email = body.email.toLowerCase();
 
-        return Contact.create(...body, ownerId);
+        const contacts = await Contact.create(body);
+        return contacts;
     } catch (err) {
         if (err.isJoi) {
             err.status = 400;
