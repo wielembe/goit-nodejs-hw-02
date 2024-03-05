@@ -1,41 +1,56 @@
 const {
-    newContactAuthSchema,
-    editContactAuthSchema,
-    editFavContactAuthSchema,
-} = require("../validation/validation");
-const Contact = require("../schemas/contact");
+    contactSchema,
+    editContactSchema,
+    editFavContactSchema,
 
-const listContacts = async () => {
+    contactIsFavoriteSchema,
+} = require("../service/validation/contactValidation");
+const Contact = require("../service/schemas/contact");
+
+// const listContacts = async (user) => {
+//     try {
+//         const { _id: owner } = user;
+//         return await Contact.find({ owner });
+//     } catch (err) {
+//         console.log(err.message);
+//     }
+// };
+
+const listContacts = async (ownerId) => {
     try {
-        return await Contact.find();
+        const contacts = await Contact.find({ owner: ownerId });
+        return contacts;
+    } catch (error) {
+        console.log(error.message);
+    }
+};
+const getContactById = async (contactId, ownerId) => {
+    try {
+        return await Contact.findOne({ _id: contactId, owner: ownerId });
     } catch (err) {
         console.log(err.message);
     }
 };
 
-const getContactById = async (contactId) => {
+const removeContact = async (contactId, ownerId) => {
     try {
-        return await Contact.findOne({ _id: contactId });
-    } catch (err) {
-        console.log(err.message);
-    }
-};
-
-const removeContact = async (contactId) => {
-    try {
-        return await Contact.deleteOne({
+        return await Contact.findByIdAndDelete({
             _id: contactId,
+            owner: ownerId,
         });
     } catch (err) {
         console.log(err.message);
     }
 };
 
-const addContact = async (body) => {
+const addContact = async (body, ownerId) => {
     try {
-        await newContactAuthSchema.validateAsync(body);
+        await contactSchema.validateAsync(body);
+
         body.email = body.email.toLowerCase();
-        return await Contact.create(body);
+
+        const contacts = await Contact.create({ ...body, owner: ownerId });
+        return contacts;
     } catch (err) {
         if (err.isJoi) {
             err.status = 400;
@@ -45,19 +60,20 @@ const addContact = async (body) => {
     }
 };
 
-const updateContact = async (contactId, body) => {
+const updateContact = async (contactId, body, ownerId) => {
     try {
-        const { name, email, phone, favorite } = body;
-        if (!name && !email && !phone && !favorite) {
+        const { name, email, phone, owner } = body;
+        if (!name && !email && !phone && !owner) {
             const result = 400;
             return result;
         } else {
-            await editContactAuthSchema.validateAsync(body);
+            await editContactSchema.validateAsync(body);
 
             if (body.email) body.email = body.email.toLowerCase();
-            return Contact.findOneAndUpdate(
+            return Contact.findByIdAndUpdate(
                 { _id: contactId },
                 { $set: body },
+                { owner: ownerId },
                 { new: true }
             );
         }
@@ -70,15 +86,15 @@ const updateContact = async (contactId, body) => {
     }
 };
 
-const updateStatusContact = async (contactId, body) => {
+const updateStatusContact = async (contactId, body, ownerId) => {
     try {
         if (!body.favorite) {
             const result = 400;
             return result;
         } else {
-            await editFavContactAuthSchema.validateAsync(body);
-            return Contact.findOneAndUpdate(
-                { _id: contactId },
+            await editFavContactSchema.validateAsync(body);
+            return Contact.findByIdAndUpdate(
+                { _id: contactId, owner: ownerId },
                 { $set: body },
                 { new: true }
             );
@@ -91,7 +107,19 @@ const updateStatusContact = async (contactId, body) => {
         console.log(err.message);
     }
 };
-
+const getContactByFavorite = async (favorite) => {
+    try {
+        await contactIsFavoriteSchema.validateAsync({ favorite });
+        const contacts = await Contact.find({ favorite });
+        return contacts;
+    } catch (err) {
+        if (err.isJoi) {
+            err.status = 400;
+            return err;
+        }
+        console.log(err.message);
+    }
+};
 module.exports = {
     listContacts,
     getContactById,
@@ -99,4 +127,5 @@ module.exports = {
     addContact,
     updateContact,
     updateStatusContact,
+    getContactByFavorite,
 };

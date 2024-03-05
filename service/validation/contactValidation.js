@@ -1,24 +1,28 @@
 const Joi = require("joi");
 
-const newContactAuthSchema = Joi.object({
-    id: Joi.string().required(),
+const contactSchema = Joi.object({
     name: Joi.string().min(3).max(50).required(),
     email: Joi.string().email().required(),
     phone: Joi.number().integer().required(),
 });
 
-const editContactAuthSchema = Joi.object({
+const editContactSchema = Joi.object({
     name: Joi.string().min(3).max(50),
     email: Joi.string().email(),
     phone: Joi.number().integer(),
 });
 
-const editFavContactAuthSchema = Joi.object({
+const editFavContactSchema = Joi.object({
     favorite: Joi.boolean().required(),
 });
 
+const contactIsFavoriteSchema = Joi.object({
+    favorite: Joi.bool().required(),
+});
+
 module.exports = {
-    newContactAuthSchema,
-    editContactAuthSchema,
-    editFavContactAuthSchema,
+    contactSchema,
+    editContactSchema,
+    editFavContactSchema,
+    contactIsFavoriteSchema,
 };
