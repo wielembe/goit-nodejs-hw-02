@@ -3,6 +3,7 @@ const {
     loginUser,
     // currentUser,
     updateSubscription,
+    updateAvatar,
 } = require("../../../models/users");
 const User = require("../../../service/schemas/user");
 
@@ -29,6 +30,7 @@ const signupUser = async (req, res, next) => {
                     user: {
                         email: result.email,
                         subscription: result.subscription,
+                        avatar: result.avatarURL,
                     },
                 },
             });
@@ -103,6 +105,7 @@ const getCurrentUser = async (req, res, next) => {
         res.status(200).json({
             email: currentUser.email,
             subscription: currentUser.subscription,
+            avatar: currentUser.avatarURL,
         });
     } catch (error) {
         next(error);
@@ -160,10 +163,30 @@ const updateUserSubscription = async (req, res, next) => {
     }
 };
 
+const changeAvatar = async (req, res, next) => {
+    if (!req.file) {
+        return badReqResponse(res, "Provide image to upload");
+    }
+    try {
+        const result = await updateAvatar(req, res);
+        if (result) {
+            return res.status(200).json({
+                status: "success",
+                code: 200,
+                avatarURL: result.avatarURL,
+            });
+        }
+        return notFoundResponse(res, "Not found");
+    } catch (err) {
+        errorResponse(res, err.message);
+    }
+};
+
 module.exports = {
     signupUser,
     loginOnUser,
     logoutUser,
     getCurrentUser,
     updateUserSubscription,
+    changeAvatar,
 };

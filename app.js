@@ -3,6 +3,7 @@ require("dotenv").config();
 const logger = require("morgan");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const path = require("path");
 
 const DB_URL = process.env.DB_HOST;
 
@@ -11,6 +12,7 @@ const usersRouter = require("./routes/api/users");
 const contactsRouter = require("./routes/api/contacts");
 
 const app = express();
+app.use(express.static(path.join(__dirname, "public")));
 
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
