@@ -18,42 +18,38 @@ const Contact = require("../service/schemas/contact");
 
 const listContacts = async (ownerId) => {
     try {
-        const filter = { owner: ownerId };
-        const contacts = await Contact.find(filter);
+        const contacts = await Contact.find({ owner: ownerId });
         return contacts;
     } catch (error) {
         console.log(error.message);
     }
 };
-const getContactById = async (contactId, user) => {
+const getContactById = async (contactId, ownerId) => {
     try {
-        const { _id: owner } = user;
-        return await Contact.findOne({ _id: contactId && owner });
+        return await Contact.findOne({ _id: contactId, owner: ownerId });
     } catch (err) {
         console.log(err.message);
     }
 };
 
-const removeContact = async (contactId, user) => {
+const removeContact = async (contactId, ownerId) => {
     try {
-        const { _id: owner } = user;
-
-        return await Contact.find({ owner }).deleteOne({ id: contactId });
-        // return await Contact.deleteOne({
-        //     _id: contactId,
-        // });
+        return await Contact.findByIdAndDelete({
+            _id: contactId,
+            owner: ownerId,
+        });
     } catch (err) {
         console.log(err.message);
     }
 };
 
-const addContact = async (body) => {
+const addContact = async (body, ownerId) => {
     try {
         await contactSchema.validateAsync(body);
 
         body.email = body.email.toLowerCase();
 
-        const contacts = await Contact.create(body);
+        const contacts = await Contact.create({ ...body, owner: ownerId });
         return contacts;
     } catch (err) {
         if (err.isJoi) {
@@ -64,19 +60,20 @@ const addContact = async (body) => {
     }
 };
 
-const updateContact = async (contactId, body) => {
+const updateContact = async (contactId, body, ownerId) => {
     try {
-        const { name, email, phone, favorite, owner } = body;
-        if (!name && !email && !phone && !favorite && !owner) {
+        const { name, email, phone, owner } = body;
+        if (!name && !email && !phone && !owner) {
             const result = 400;
             return result;
         } else {
             await editContactSchema.validateAsync(body);
 
             if (body.email) body.email = body.email.toLowerCase();
-            return Contact.findOneAndUpdate(
+            return Contact.findByIdAndUpdate(
                 { _id: contactId },
                 { $set: body },
+                { owner: ownerId },
                 { new: true }
             );
         }
@@ -89,15 +86,15 @@ const updateContact = async (contactId, body) => {
     }
 };
 
-const updateStatusContact = async (contactId, body) => {
+const updateStatusContact = async (contactId, body, ownerId) => {
     try {
         if (!body.favorite) {
             const result = 400;
             return result;
         } else {
             await editFavContactSchema.validateAsync(body);
-            return Contact.findOneAndUpdate(
-                { _id: contactId },
+            return Contact.findByIdAndUpdate(
+                { _id: contactId, owner: ownerId },
                 { $set: body },
                 { new: true }
             );

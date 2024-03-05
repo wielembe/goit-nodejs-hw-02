@@ -1,7 +1,7 @@
 const {
     registerUser,
     loginUser,
-    currentUser,
+    // currentUser,
     updateSubscription,
 } = require("../../../models/users");
 const User = require("../../../service/schemas/user");
@@ -93,7 +93,21 @@ const logoutUser = async (req, res, next) => {
     }
 };
 
-const getCurrentUser = currentUser;
+const getCurrentUser = async (req, res, next) => {
+    try {
+        const currentUser = req.user;
+        if (!currentUser) {
+            return res.status(401).json({ message: "Not authorized" });
+        }
+
+        res.status(200).json({
+            email: currentUser.email,
+            subscription: currentUser.subscription,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 // async (req, res, next) => {
 //     try {
 //         const { email, subscription, token } = req.user;

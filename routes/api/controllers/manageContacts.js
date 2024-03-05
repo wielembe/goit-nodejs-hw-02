@@ -31,8 +31,8 @@ const getContactsByFavorite = async (req, res, next) => {
 };
 
 const getAllContacts = async (req, res, next) => {
-    const ownerId = req.user.id;
     try {
+        const ownerId = req.user._id;
         const contacts = await listContacts(ownerId);
         if (contacts) {
             res.json({
@@ -47,9 +47,10 @@ const getAllContacts = async (req, res, next) => {
 };
 
 const getContactsById = async (req, res, next) => {
-    const ownerId = req.user._id;
     try {
-        const contact = await getContactById(req.params.contactId, ownerId);
+        const { contactId } = req.params;
+        const ownerId = req.user._id;
+        const contact = await getContactById(contactId, ownerId);
         if (contact) {
             res.json({
                 status: "success",
@@ -68,36 +69,57 @@ const getContactsById = async (req, res, next) => {
 };
 
 const postContact = async (req, res, next) => {
-    // const ownerId = req.user._id;
     try {
-        const body = {
-            name: req.body.name,
-            email: req.body.email,
-            phone: req.body.phone,
-            owner: req.body.user._id,
-
-            // favorite: req.body.favorite || false,
-        };
-
-        const result = await addContact(body);
-
-        if (result && result.status !== 400) {
-            res.status(201).json({
-                status: "success",
-                code: 201,
-                data: result,
-            });
-        } else {
-            badReqResponse(res, result.message);
+        const { name, email, phone } = req.body;
+        const ownerId = req.user._id;
+        if (!name || !email || !phone) {
+            return res
+                .status(400)
+                .json({ message: "Missing required field(s)" });
         }
-    } catch (err) {
-        errorResponse(res, err.message);
+
+        const dataToAdd = { name, email, phone };
+        if (dataToAdd.error) {
+            return res
+                .status(400)
+                .json({ message: dataToAdd.error.details[0].message });
+        }
+        const newContact = await addContact({ name, email, phone }, ownerId);
+        res.status(201).json(newContact);
+    } catch (error) {
+        next(error);
     }
 };
+//     try {
+//         const body = {
+//             name: req.body.name,
+//             email: req.body.email,
+//             phone: req.body.phone,
+
+//             // favorite: req.body.favorite || false,
+//         };
+//         const ownerId = req.user._id;
+//        // const result = await addContact(body);
+
+//         if (result && result.status !== 400) {
+//             res.status(201).json({
+//                 status: "success",
+//                 code: 201,
+//                 data: result,
+//             });
+//         } else {
+//             badReqResponse(res, result.message);
+//         }
+//     } catch (err) {
+//         errorResponse(res, err.message);
+//     }
+// };
 
 const deleteContact = async (req, res, next) => {
     try {
-        const message = await removeContact(req.params.contactId);
+        const { contactId } = req.params;
+        const ownerId = req.user._id;
+        const message = await removeContact(contactId, ownerId);
         if (message) {
             res.json({
                 status: "success",
@@ -114,13 +136,14 @@ const deleteContact = async (req, res, next) => {
 
 const editContact = async (req, res, next) => {
     try {
+        const { contactId } = req.params;
         const body = {
             name: req.body.name,
             email: req.body.email,
             phone: req.body.phone,
-            favorite: req.body.favorite,
         };
-        const result = await updateContact(req.params.contactId, body);
+        const ownerId = req.user._id;
+        const result = await updateContact(contactId, body, ownerId);
         if (result && result.status !== 400 && result !== 400) {
             res.json({
                 status: "success",
