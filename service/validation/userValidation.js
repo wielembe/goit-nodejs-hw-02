@@ -21,9 +21,14 @@ const editSubUserAuthSchema = Joi.object({
     subscription: Joi.string().valid("starter", "pro", "business").required(),
 });
 
+const checkUserEmailSchema = Joi.object({
+    email: Joi.string().email().required(),
+});
+
 module.exports = {
     newUserAuthSchema,
     loginUserAuthSchema,
     currUserAuthSchema,
     editSubUserAuthSchema,
+    checkUserEmailSchema,
 };
