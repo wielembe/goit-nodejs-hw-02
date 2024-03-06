@@ -7,6 +7,8 @@ const {
     getCurrentUser,
     updateUserSubscription,
     changeAvatar,
+    verifyByToken,
+    resendVerificationEmail,
 } = require("./controllers/manageUsers");
 
 const { uploadPicture } = require("./controllers/managePictureUpload");
@@ -23,5 +25,8 @@ router.get("/current", auth, getCurrentUser);
 
 router.patch("/", auth, updateUserSubscription);
 router.patch("/avatars", auth, uploadPicture, changeAvatar);
+router.get("/verify/:verificationToken", verifyByToken);
+
+router.post("/verify", resendVerificationEmail);
 
 module.exports = router;
